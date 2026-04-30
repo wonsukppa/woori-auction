@@ -297,7 +297,7 @@ export async function POST(req: NextRequest) {
     );
 
     const pdf = await renderToBuffer(doc);
-    return new NextResponse(pdf, {
+    return new NextResponse(new Uint8Array(pdf), {
       status: 200,
       headers: { 'Content-Type': 'application/pdf' },
     });
