@@ -126,6 +126,10 @@ const S = StyleSheet.create({
   roiBox: {
     backgroundColor: '#ffffff', borderRadius: 15, borderWidth: 2, borderColor: '#0000FF', padding: 25, marginBottom: 30,
   },
+  roiHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: 15, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#E0E0E0',
+  },
   roiRow: {
     flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
   },
