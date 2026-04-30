@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import AuctionList from '../components/dashboard/AuctionList';
 import dynamic from 'next/dynamic';
 const AuctionMap = dynamic(() => import('../components/dashboard/AuctionMap'), { ssr: false });
@@ -7,7 +7,7 @@ import AnalysisPanel from '../components/dashboard/AnalysisPanel';
 import { useAuctionData } from '../hooks/useAuctionData';
 import { useSearchParams } from 'next/navigation';
 
-export default function Home() {
+function HomeContent() {
   const { properties, activeProperty, setActiveProperty, isLoading, refresh } = useAuctionData();
   const searchParams = useSearchParams();
   const idParam = searchParams?.get('id');
@@ -19,7 +19,7 @@ export default function Home() {
         setActiveProperty(p);
       }
     }
-  }, [idParam, properties, setActiveProperty]); // Removed activeProperty from deps to prevent loop but allow override
+  }, [idParam, properties, setActiveProperty]); 
 
   const [gradeFilter, setGradeFilter] = React.useState<string>('ALL');
 
@@ -166,5 +166,13 @@ export default function Home() {
         .db-custom-cluster, .dabang-marker-icon { background: none !important; border: none !important; }
       `}</style>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
