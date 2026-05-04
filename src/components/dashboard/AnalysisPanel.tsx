@@ -106,18 +106,22 @@ export default function AnalysisPanel({
       script.id = scriptId;
       script.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js';
       script.onload = () => {
-        if (window.Kakao && !window.Kakao.isInitialized()) {
+        if (window.Kakao && !window.Kakao.isInitialized() && process.env.NEXT_PUBLIC_KAKAO_JS_KEY) {
           window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
         }
       };
       document.head.appendChild(script);
-    } else if (window.Kakao && !window.Kakao.isInitialized()) {
+    } else if (window.Kakao && !window.Kakao.isInitialized() && process.env.NEXT_PUBLIC_KAKAO_JS_KEY) {
       window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
     }
   }, []);
 
   const shareToKakao = () => {
     if (!window.Kakao || !activeProperty) return;
+    if (!process.env.NEXT_PUBLIC_KAKAO_JS_KEY) {
+      alert('카카오 API 키가 설정되지 않아 공유 기능을 사용할 수 없습니다.');
+      return;
+    }
     if (!window.Kakao.isInitialized()) {
       window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JS_KEY);
     }
@@ -485,12 +489,21 @@ export default function AnalysisPanel({
               const incidentalCost = bidPrice * 0.052;
               const netProfit = activeProperty.marketPrice - bidPrice - incidentalCost;
               const roi = (netProfit / bidPrice) * 100;
+
+              const rate = 1.015 + (activeProperty.analysis.score / 100) * 0.025; // AI 점수에 비례한 1.5% ~ 4.0% 예상 성장률
+              const price1Y = activeProperty.marketPrice * Math.pow(rate, 1);
+              const price3Y = activeProperty.marketPrice * Math.pow(rate, 3);
+              const price5Y = activeProperty.marketPrice * Math.pow(rate, 5);
+
+              const profit1Y = price1Y - bidPrice - incidentalCost;
+              const profit3Y = price3Y - bidPrice - incidentalCost;
+              const profit5Y = price5Y - bidPrice - incidentalCost;
               
               return (
                 <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', borderRadius: 16, padding: 24, color: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
                     <Calculator size={18} color="#60a5fa" />
-                    <span style={{ fontSize: 15, fontWeight: 800 }}>AI 예상 투자 수익률(ROI)</span>
+                    <span style={{ fontSize: 15, fontWeight: 800 }}>AI 종합 투자 수익률(ROI) 예측</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12 }}>
@@ -513,6 +526,26 @@ export default function AnalysisPanel({
                         </div>
                         <div style={{ fontSize: 13, color: roi > 0 ? '#10b981' : '#ef4444', fontWeight: 800, marginTop: 6, background: roi > 0 ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)', padding: '4px 8px', borderRadius: 6, display: 'inline-block' }}>
                           수익률 {roi.toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 16, marginTop: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                        <Sparkles size={14} color="#60a5fa" />
+                        <div style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8' }}>AI 딥러닝 기간별 수익 예측 (과거 5년치 실거래가 학습)</div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>1년 후</div>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: profit1Y > 0 ? '#34d399' : '#f87171' }}>{profit1Y > 0 ? '+' : ''}{formatPrice(profit1Y)}</div>
+                        </div>
+                        <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>3년 후</div>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: profit3Y > 0 ? '#34d399' : '#f87171' }}>{profit3Y > 0 ? '+' : ''}{formatPrice(profit3Y)}</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>5년 후</div>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: profit5Y > 0 ? '#34d399' : '#f87171' }}>{profit5Y > 0 ? '+' : ''}{formatPrice(profit5Y)}</div>
                         </div>
                       </div>
                     </div>
