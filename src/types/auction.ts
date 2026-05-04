@@ -11,6 +11,10 @@ export interface AuctionProperty {
   status: string;
   risk: 'safe' | 'warning' | 'danger';
   image: string;
+  images?: string[];
+  area: number;             // Building or land area (m2)
+  appraisalPrice: number;   // Original appraisal price
+  auctionDate: string;
   coords: [number, number];
   lat?: number;
   lng?: number;
