@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { ArrowLeft, Bell, Moon, Shield, ChevronRight, Toggle } from 'lucide-react';
+import { ArrowLeft, Bell, Moon, Shield, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SettingsPage() {
