@@ -71,26 +71,44 @@ export async function GET() {
       verdict = cVerdicts[i % cVerdicts.length];
     }
 
+    const risk: 'safe' | 'warning' | 'danger' = score >= 85 ? 'safe' : score >= 70 ? 'warning' : 'danger';
+
     return {
       id: i + 1,
       caseNo: `2024타경${100000 + i}`,
+      name: `${coord.area} ${type}`,
       address: `서울특별시 ${coord.area} ${i + 123}-${i % 10}번지`,
       type: type as any,
+      price: minPrice,
       minPrice,
+      ratio: Math.round((minPrice / (marketPrice * 1.05)) * 100),
+      date: '2024-05-15',
+      status: '진행중',
+      risk,
+      image: `https://picsum.photos/seed/${i+200}/800/600`,
       marketPrice,
       area: 59 + (i % 50),
       appraisalPrice: marketPrice * 1.05,
       auctionDate: '2024-05-15',
+      estimatedRent: Math.round(minPrice * 0.004),
+      failCount: i % 4,
       images: [`https://picsum.photos/seed/${i+200}/800/600`],
-      // Spread properties in a circle around the center coordinate to avoid overlapping
+      coords: [coord.lng, coord.lat] as [number, number],
       lat: coord.lat + (Math.cos(i * 1.1) * 0.003),
       lng: coord.lng + (Math.sin(i * 1.1) * 0.003),
+      nearbySold: [
+        { date: '2024-03-15', price: Math.round(marketPrice * 0.98), name: `${coord.area} 인근 실거래` },
+        { date: '2024-01-20', price: Math.round(marketPrice * 0.95), name: `${coord.area} 인근 실거래` },
+      ],
       analysis: {
         score,
         profitScore: 70 + (i % 25),
-        safetyScore: 60 + (i % 35),
+        safetyScore: score >= 85 ? 85 + (i % 10) : score >= 70 ? 70 + (i % 15) : 55 + (i % 15),
+        marketScore: 65 + (i % 30),
+        livingScore: 60 + (i % 35),
         verdict,
         isIllegal: i % 7 === 0,
+        avgMaintenance: 150000 + (i % 5) * 30000,
         subwayInfo,
         schoolInfo,
         commerceGrade: ['S', 'A', 'B', 'C'][i % 4]

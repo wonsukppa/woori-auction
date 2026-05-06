@@ -7,9 +7,9 @@ export const formatPrice = (price: number): string => {
     return `${(price / 100000000).toFixed(1)}억`;
   }
   if (price >= 10000) {
-    return `${(price / 10000).toLocaleString()}만`;
+    return `${Math.round(price / 10000).toLocaleString()}만`;
   }
-  return price.toLocaleString();
+  return Math.round(price).toLocaleString();
 };
 
 /**

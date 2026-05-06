@@ -9,6 +9,7 @@ export interface AuctionProperty {
   ratio: number;
   date: string;
   status: string;
+  failCount?: number;        // 유찰 횟수 (0 = 첫 경매)
   risk: 'safe' | 'warning' | 'danger';
   image: string;
   images?: string[];

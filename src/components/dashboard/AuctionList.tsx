@@ -239,7 +239,12 @@ const AuctionList: React.FC<AuctionListProps> = ({ properties, activeProperty, o
                         <span style={{ fontSize: 9, fontWeight: 800, color: assetUI.color }}>{p.type}</span>
                       </div>
                     </div>
-                    <div style={{ fontSize: 17, fontWeight: 900, color: '#111827' }}>{formatPrice(p.minPrice)}</div>
+                    <div style={{ fontSize: 17, fontWeight: 900, color: '#111827', display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      {formatPrice(p.minPrice)}
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
+                        ({p.area}㎡ / {(p.area * 0.3025).toFixed(1)}평)
+                      </span>
+                    </div>
                     <div style={{ fontSize: 11, color: '#64748b', marginTop: 3, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.address}</div>
                   </div>
                 </div>

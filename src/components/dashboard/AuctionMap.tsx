@@ -36,11 +36,14 @@ const formatMarkerPrice = (price: number) => {
 
 export default function AuctionMap({ properties, activeProperty, onSelect, priceDisplayMode, setPriceDisplayMode }: AuctionMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [mapType, setMapType] = useState<'base' | 'sat'>('base');
+  const [showCadastral, setShowCadastral] = useState(false);
   const leafletMap = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [key: number]: L.Marker; group: any }>({ group: null });
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [mapType, setMapType] = useState<'base' | 'sat' | 'cad'>('base');
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const baseLayerRef = useRef<L.TileLayer | null>(null);
+  const cadLayerRef = useRef<L.TileLayer | null>(null);
+  const vworldLayerRef = useRef<L.TileLayer | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -52,6 +55,8 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
       leafletMap.current = L.map(mapContainerRef.current, {
         center: [37.5665, 126.9780],
         zoom: 13,
+        maxZoom: 22,
+        minZoom: 6,
         zoomControl: false,
       });
 
@@ -66,26 +71,55 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
     };
   }, []);
 
-  // Update Tile Layer when mapType changes
+  // Update All Layers
   useEffect(() => {
     if (!leafletMap.current) return;
 
-    if (tileLayerRef.current) {
-      leafletMap.current.removeLayer(tileLayerRef.current);
-    }
+    // 1. Clean up everything first to prevent stacking
+    if (baseLayerRef.current) leafletMap.current.removeLayer(baseLayerRef.current);
+    if (cadLayerRef.current) leafletMap.current.removeLayer(cadLayerRef.current);
+    if (vworldLayerRef.current) leafletMap.current.removeLayer(vworldLayerRef.current);
 
-    let url = 'http://mt0.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}'; // Default Roadmap
+    // 2. Add Base Layer (HTTPS)
+    let baseUrl = 'https://mt0.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}'; // Roadmap
     if (mapType === 'sat') {
-      url = 'http://mt0.google.com/vt/lyrs=y&hl=ko&x={x}&y={y}&z={z}'; // Satellite Hybrid
-    } else if (mapType === 'cad') {
-      // Vworld Cadastral Map (Public Key for Demo)
-      url = 'https://api.vworld.kr/req/wmts/1.0.0/7E3A900A-5A0D-3F8E-897F-C8F44621A582/District/{z}/{y}/{x}.png';
+      baseUrl = 'https://mt0.google.com/vt/lyrs=y&hl=ko&x={x}&y={y}&z={z}'; // Satellite Hybrid
     }
+    const vworldKey = process.env.NEXT_PUBLIC_VWORLD_API_KEY || '9686FCE1-E736-314F-9979-FAB924182366';
 
-    tileLayerRef.current = L.tileLayer(url, {
-      attribution: '&copy; Google Maps'
-    }).addTo(leafletMap.current);
-  }, [mapType]);
+    // 3. Define Layers
+    if (showCadastral) {
+      // MODE: Professional Cadastral (Integrated Vworld Engine)
+      const vworldBaseUrl = `https://api.vworld.kr/req/wmts/1.0.0/${vworldKey}/Base/{z}/{y}/{x}.png`;
+      baseLayerRef.current = L.tileLayer(vworldBaseUrl, {
+        zIndex: 1,
+        maxNativeZoom: 19, // Vworld base ends at 19
+        maxZoom: 22
+      }).addTo(leafletMap.current);
+
+      const vworldCadUrl = `https://api.vworld.kr/req/wmts/1.0.0/${vworldKey}/LP_PA_CBND_BUBUN/{z}/{y}/{x}.png`;
+      cadLayerRef.current = L.tileLayer(vworldCadUrl, {
+        zIndex: 2,
+        opacity: 0.9,
+        transparent: true,
+        maxNativeZoom: 19, // Vworld cadastral ends at 19
+        maxZoom: 22
+      }).addTo(leafletMap.current);
+
+    } else {
+      // MODE: Standard Google Maps
+      const baseUrl = mapType === 'base' 
+        ? 'https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}'
+        : 'https://mt1.google.com/vt/lyrs=y&hl=ko&x={x}&y={y}&z={z}';
+      
+      baseLayerRef.current = L.tileLayer(baseUrl, {
+        attribution: '&copy; Google Maps',
+        zIndex: 1,
+        maxNativeZoom: 20,
+        maxZoom: 22
+      }).addTo(leafletMap.current);
+    }
+  }, [mapType, showCadastral]);
 
   useEffect(() => {
     if (!leafletMap.current) return;
@@ -339,15 +373,15 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
         </button>
       </div>
 
-      {/* ── MAP TYPE & LAYERS: Top Left Desktop Only ── */}
+      {/* ── MAP TYPE & LAYERS: Bottom Left Desktop Only ── */}
       <div style={{ 
         position: 'absolute', 
-        top: 24, 
+        bottom: isMobile ? 'auto' : 160, 
+        top: isMobile ? 80 : 'auto',
         left: 24,
-        right: 'auto', 
         zIndex: 1000, 
-        display: isMobile ? 'none' : 'flex', 
-        flexDirection: 'row', 
+        display: 'flex', 
+        flexDirection: 'column', 
         gap: 12,
         pointerEvents: 'none'
       }}>
@@ -359,6 +393,7 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
           boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
           border: '1px solid #e2e8f0',
           display: 'flex',
+          flexDirection: 'column',
           gap: 4,
           pointerEvents: 'auto'
         }}>
@@ -370,7 +405,7 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
               key={type.id} 
               onClick={() => setMapType(type.id as any)}
               style={{ 
-                padding: '8px 16px',
+                padding: '8px 12px',
                 height: 36,
                 background: mapType === type.id ? '#1268FB' : 'white', 
                 border: 'none',
@@ -396,29 +431,29 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
           boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
           border: '1px solid #e2e8f0',
           display: 'flex',
-          gap: 4,
           pointerEvents: 'auto'
         }}>
           <button 
-            onClick={() => setMapType(mapType === 'cad' ? 'base' : 'cad')}
+            onClick={() => setShowCadastral(!showCadastral)}
             style={{ 
-              padding: '8px 16px',
+              padding: '8px 12px',
               height: 36,
-              background: mapType === 'cad' ? '#f59e0b' : 'white', 
-              border: '1px solid ' + (mapType === 'cad' ? '#f59e0b' : '#e2e8f0'),
+              background: showCadastral ? '#f59e0b' : 'white', 
+              border: 'none',
               borderRadius: 8, 
               fontSize: 12, 
               fontWeight: 900, 
-              color: mapType === 'cad' ? 'white' : '#475569', 
+              color: showCadastral ? 'white' : '#475569', 
               cursor: 'pointer',
               transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
-              gap: 6
+              gap: 6,
+              whiteSpace: 'nowrap'
             }}
           >
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: mapType === 'cad' ? 'white' : '#f59e0b' }}></span>
-            지적편집도
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: showCadastral ? 'white' : '#f59e0b' }}></span>
+            지적도
           </button>
         </div>
       </div>
