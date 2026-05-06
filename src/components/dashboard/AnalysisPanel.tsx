@@ -70,6 +70,7 @@ export default function AnalysisPanel({
   const [bidPrice, setBidPrice] = useState(activeProperty?.minPrice || 0);
   const [user, setUser] = useState<{name: string} | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [showCriteria, setShowCriteria] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [isExpertMode, setIsExpertMode] = useState(false);
   const [repairCost, setRepairCost] = useState(0);
