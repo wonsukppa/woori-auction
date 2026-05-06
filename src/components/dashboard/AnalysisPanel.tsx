@@ -70,8 +70,11 @@ export default function AnalysisPanel({
   const [bidPrice, setBidPrice] = useState(activeProperty?.minPrice || 0);
   const [user, setUser] = useState<{name: string} | null>(null);
   const [isSaved, setIsSaved] = useState(false);
-  const [showCriteria, setShowCriteria] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [isExpertMode, setIsExpertMode] = useState(false);
+  const [repairCost, setRepairCost] = useState(0);
+  const [loanRatio, setLoanRatio] = useState(70);
+  const [interestRate, setInterestRate] = useState(4.5);
   
   const isMobile = useMediaQuery('(max-width: 768px)');
   
@@ -392,23 +395,55 @@ export default function AnalysisPanel({
               )}
             </div>
 
-            {/* Location Diagnosis */}
-            <div style={{ background: 'white', borderRadius: 20, padding: 24, border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}><MapPin size={20} color="#1268FB" /><span style={{ fontSize: 16, fontWeight: 900 }}>AI 입지 정보 진단</span></div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ background: '#eff6ff', width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Train size={20} color="#1268FB" /></div>
-                  <div>
-                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>가까운 지하철역</div>
-                    <div style={{ fontSize: 13, fontWeight: 800 }}>{activeProperty.analysis.subwayInfo}</div>
-                  </div>
+            {/* Expert Data Section (New) */}
+            <div style={{ background: '#f8fafc', borderRadius: 20, padding: 24, border: '1px solid #e5e7eb' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <FileText size={20} color="#1268FB" />
+                <span style={{ fontSize: 16, fontWeight: 900 }}>전문가 상세 분석 데이터</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ background: 'white', padding: 12, borderRadius: 12, border: '1px solid #f1f5f9' }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>용도지역</div>
+                  <div style={{ fontSize: 13, fontWeight: 800 }}>제2종 일반주거지역</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ background: '#ecfdf5', width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GraduationCap size={20} color="#059669" /></div>
-                  <div>
-                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>가까운 학교</div>
-                    <div style={{ fontSize: 13, fontWeight: 800 }}>{activeProperty.analysis.schoolInfo}</div>
+                <div style={{ background: 'white', padding: 12, borderRadius: 12, border: '1px solid #f1f5f9' }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>지방조례 용적률</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#059669' }}>200% (최대 250%)</div>
+                </div>
+                <div style={{ background: 'white', padding: 12, borderRadius: 12, border: '1px solid #f1f5f9' }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>토지이용계획</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.4 }}>가축사육제한구역, 상대보호구역</div>
+                </div>
+                <div style={{ background: 'white', padding: 12, borderRadius: 12, border: '1px solid #f1f5f9' }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>위반건축물 여부</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#16a34a' }}>해당 없음</div>
+                </div>
+              </div>
+              <button 
+                onClick={() => window.open('https://www.eum.go.kr/', '_blank')}
+                style={{ width: '100%', marginTop: 16, padding: '10px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 12, fontWeight: 800, color: '#475569', cursor: 'pointer' }}
+              >
+                토지이용계획원(이음) 원본 확인하기
+              </button>
+            </div>
+
+            {/* Expert Consulting CTA (New) */}
+            <div style={{ background: 'linear-gradient(135deg, #fefce8 0%, #fffbeb 100%)', borderRadius: 20, padding: 24, border: '1px solid #fde68a', boxShadow: '0 10px 20px rgba(251, 191, 36, 0.1)' }}>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <div style={{ background: '#f59e0b', width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Users size={24} color="white" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: '#92400e', marginBottom: 4 }}>전문가 정밀 컨설팅</div>
+                  <div style={{ fontSize: 13, color: '#b45309', lineHeight: 1.5, fontWeight: 600 }}>
+                    복잡한 특수권리 분석과 신축 수지분석,<br/>현직 경매 마스터가 직접 도와드립니다.
                   </div>
+                  <button 
+                    onClick={() => window.open('http://pf.kakao.com/', '_blank')}
+                    style={{ marginTop: 16, padding: '10px 20px', background: '#92400e', color: 'white', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}
+                  >
+                    1:1 정밀 분석 의뢰하기
+                  </button>
                 </div>
               </div>
             </div>
@@ -448,13 +483,21 @@ export default function AnalysisPanel({
             <div style={{ background: '#f0f7ff', borderRadius: 16, padding: 24, border: '1px solid #bfdbfe', position: 'relative' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: '#1e3a8a' }}>나의 예상 입찰가 시뮬레이터</div>
-                <button 
-                  onClick={() => setBidPrice(activeProperty.marketPrice * 0.82)}
-                  style={{ background: '#1e40af', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 10px rgba(30, 64, 175, 0.3)' }}
-                >
-                  <Sparkles size={16} color="#93c5fd" />
-                  AI 최적 입찰가 적용
-                </button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button 
+                    onClick={() => setIsExpertMode(!isExpertMode)}
+                    style={{ background: isExpertMode ? '#1e293b' : 'white', color: isExpertMode ? 'white' : '#64748b', border: '1px solid #cbd5e1', padding: '8px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+                  >
+                    {isExpertMode ? '일반 모드' : '전문가 모드'}
+                  </button>
+                  <button 
+                    onClick={() => setBidPrice(activeProperty.marketPrice * 0.82)}
+                    style={{ background: '#1268FB', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 10px rgba(18, 104, 251, 0.3)' }}
+                  >
+                    <Sparkles size={16} color="#93c5fd" />
+                    AI 최적가
+                  </button>
+                </div>
               </div>
               
               <div style={{ background: 'white', padding: '14px 18px', borderRadius: 12, marginBottom: 24, border: '1px dashed #93c5fd', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -463,6 +506,28 @@ export default function AnalysisPanel({
                   최근 3년간 해당 지역 유사 물건 낙찰 데이터를 기반으로 분석한 결과, <strong>시세의 82% ({formatPrice(activeProperty.marketPrice * 0.82)})</strong>에서 입찰할 경우 낙찰 확률 85% 이상 및 10%대 안전 마진을 기대할 수 있습니다.
                 </div>
               </div>
+
+              {isExpertMode && (
+                <div style={{ background: 'white', padding: 20, borderRadius: 16, marginBottom: 20, border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#475569' }}>수리/명도비용</span>
+                      <span style={{ fontSize: 13, fontWeight: 900, color: '#1268FB' }}>{formatPrice(repairCost)}</span>
+                    </div>
+                    <input type="range" min="0" max="100000000" step="1000000" value={repairCost} onChange={(e) => setRepairCost(Number(e.target.value))} style={{ width: '100%', accentColor: '#1268FB' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#94a3b8', marginBottom: 6 }}>대출 비율 ({loanRatio}%)</div>
+                      <input type="number" value={loanRatio} onChange={(e) => setLoanRatio(Number(e.target.value))} style={{ width: '100%', padding: '8px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 14, fontWeight: 700 }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#94a3b8', marginBottom: 6 }}>대출 금리 (%)</div>
+                      <input type="number" step="0.1" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} style={{ width: '100%', padding: '8px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 14, fontWeight: 700 }} />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', fontWeight: 700 }}>
@@ -487,17 +552,21 @@ export default function AnalysisPanel({
             {/* ROI Analysis */}
             {(() => {
               const incidentalCost = bidPrice * 0.052;
-              const netProfit = activeProperty.marketPrice - bidPrice - incidentalCost;
-              const roi = (netProfit / bidPrice) * 100;
+              const loanAmount = bidPrice * (loanRatio / 100);
+              const monthlyInterest = (loanAmount * (interestRate / 100)) / 12;
+              const cashRequired = bidPrice + incidentalCost + repairCost - loanAmount;
 
-              const rate = 1.015 + (activeProperty.analysis.score / 100) * 0.025; // AI 점수에 비례한 1.5% ~ 4.0% 예상 성장률
+              const netProfit = activeProperty.marketPrice - bidPrice - incidentalCost - repairCost;
+              const roi = (netProfit / (cashRequired || 1)) * 100;
+
+              const rate = 1.015 + (activeProperty.analysis.score / 100) * 0.025;
               const price1Y = activeProperty.marketPrice * Math.pow(rate, 1);
               const price3Y = activeProperty.marketPrice * Math.pow(rate, 3);
               const price5Y = activeProperty.marketPrice * Math.pow(rate, 5);
 
-              const profit1Y = price1Y - bidPrice - incidentalCost;
-              const profit3Y = price3Y - bidPrice - incidentalCost;
-              const profit5Y = price5Y - bidPrice - incidentalCost;
+              const profit1Y = price1Y - bidPrice - incidentalCost - repairCost;
+              const profit3Y = price3Y - bidPrice - incidentalCost - repairCost;
+              const profit5Y = price5Y - bidPrice - incidentalCost - repairCost;
               
               return (
                 <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', borderRadius: 16, padding: 24, color: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
@@ -515,17 +584,33 @@ export default function AnalysisPanel({
                       <span style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8' }}>- {formatPrice(bidPrice)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12 }}>
-                      <span style={{ fontSize: 13, color: '#94a3b8' }}>부대 비용 (취득세 등)</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8' }}>- {formatPrice(incidentalCost)}</span>
+                      <span style={{ fontSize: 13, color: '#94a3b8' }}>부대 비용 및 수리비</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8' }}>- {formatPrice(incidentalCost + repairCost)}</span>
                     </div>
+                    {isExpertMode && (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12 }}>
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>대출 실행액 ({loanRatio}%)</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: '#60a5fa' }}>+ {formatPrice(loanAmount)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12 }}>
+                          <span style={{ fontSize: 13, color: '#94a3b8' }}>월 예상 이자</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: '#f87171' }}>{formatPrice(monthlyInterest)} / 월</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12, background: 'rgba(255,255,255,0.05)', margin: '0 -24px', padding: '12px 24px' }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: '#cbd5e1' }}>실제 필요 현금</span>
+                          <span style={{ fontSize: 16, fontWeight: 900, color: '#fbbf24' }}>{formatPrice(cashRequired)}</span>
+                        </div>
+                      </>
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, alignItems: 'flex-end' }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: '#cbd5e1' }}>즉시 매도 시 세후수익</span>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: '#cbd5e1' }}>{isExpertMode ? '투자 원금 대비 세후수익' : '즉시 매도 시 세후수익'}</span>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: 26, fontWeight: 900, color: roi > 0 ? '#34d399' : '#f87171' }}>
                           {roi > 0 ? '+' : ''}{formatPrice(netProfit)}
                         </div>
                         <div style={{ fontSize: 13, color: roi > 0 ? '#10b981' : '#ef4444', fontWeight: 800, marginTop: 6, background: roi > 0 ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)', padding: '4px 8px', borderRadius: 6, display: 'inline-block' }}>
-                          수익률 {roi.toFixed(1)}%
+                          {isExpertMode ? '자기자본 수익률' : '수익률'} {roi.toFixed(1)}%
                         </div>
                       </div>
                     </div>

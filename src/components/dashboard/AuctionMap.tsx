@@ -78,8 +78,8 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
     if (mapType === 'sat') {
       url = 'http://mt0.google.com/vt/lyrs=y&hl=ko&x={x}&y={y}&z={z}'; // Satellite Hybrid
     } else if (mapType === 'cad') {
-      // For Cadastral, we'll try to use a Vworld-style overlay or Google Terrain
-      url = 'http://mt0.google.com/vt/lyrs=p&hl=ko&x={x}&y={y}&z={z}'; 
+      // Vworld Cadastral Map (Public Key for Demo)
+      url = 'https://api.vworld.kr/req/wmts/1.0.0/7E3A900A-5A0D-3F8E-897F-C8F44621A582/District/{z}/{y}/{x}.png';
     }
 
     tileLayerRef.current = L.tileLayer(url, {
@@ -339,7 +339,7 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
         </button>
       </div>
 
-      {/* ── MAP TYPE CONTROLS: Top Left Desktop Only ── */}
+      {/* ── MAP TYPE & LAYERS: Top Left Desktop Only ── */}
       <div style={{ 
         position: 'absolute', 
         top: 24, 
@@ -348,42 +348,79 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
         zIndex: 1000, 
         display: isMobile ? 'none' : 'flex', 
         flexDirection: 'row', 
-        gap: 4,
-        background: 'white',
-        padding: 4,
-        borderRadius: 12,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-        border: '1px solid #e2e8f0',
-        pointerEvents: 'auto'
+        gap: 12,
+        pointerEvents: 'none'
       }}>
-        {[
-          { id: 'base', label: '일반' },
-          { id: 'sat', label: '위성' },
-          { id: 'cad', label: '지형' }
-        ].map(type => (
+        {/* Base Map Switcher */}
+        <div style={{
+          background: 'white',
+          padding: 4,
+          borderRadius: 12,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          border: '1px solid #e2e8f0',
+          display: 'flex',
+          gap: 4,
+          pointerEvents: 'auto'
+        }}>
+          {[
+            { id: 'base', label: '일반' },
+            { id: 'sat', label: '위성' }
+          ].map(type => (
+            <button 
+              key={type.id} 
+              onClick={() => setMapType(type.id as any)}
+              style={{ 
+                padding: '8px 16px',
+                height: 36,
+                background: mapType === type.id ? '#1268FB' : 'white', 
+                border: 'none',
+                borderRadius: 8, 
+                fontSize: 12, 
+                fontWeight: 900, 
+                color: mapType === type.id ? 'white' : '#475569', 
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                minWidth: 50
+              }}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Specialized Overlays */}
+        <div style={{
+          background: 'white',
+          padding: 4,
+          borderRadius: 12,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          border: '1px solid #e2e8f0',
+          display: 'flex',
+          gap: 4,
+          pointerEvents: 'auto'
+        }}>
           <button 
-            key={type.id} 
-            onClick={() => setMapType(type.id as any)}
+            onClick={() => setMapType(mapType === 'cad' ? 'base' : 'cad')}
             style={{ 
               padding: '8px 16px',
               height: 36,
-              background: mapType === type.id ? '#1268FB' : 'white', 
-              border: 'none',
+              background: mapType === 'cad' ? '#f59e0b' : 'white', 
+              border: '1px solid ' + (mapType === 'cad' ? '#f59e0b' : '#e2e8f0'),
               borderRadius: 8, 
               fontSize: 12, 
               fontWeight: 900, 
-              color: mapType === type.id ? 'white' : '#475569', 
+              color: mapType === 'cad' ? 'white' : '#475569', 
               cursor: 'pointer',
               transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: 50
+              gap: 6
             }}
           >
-            {type.label}
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: mapType === 'cad' ? 'white' : '#f59e0b' }}></span>
+            지적편집도
           </button>
-        ))}
+        </div>
       </div>
     </div>
   );
