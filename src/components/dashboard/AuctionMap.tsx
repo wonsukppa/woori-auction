@@ -101,7 +101,6 @@ export default function AuctionMap({ properties, activeProperty, onSelect, price
       cadLayerRef.current = L.tileLayer(vworldCadUrl, {
         zIndex: 2,
         opacity: 0.9,
-        transparent: true,
         maxNativeZoom: 19, // Vworld cadastral ends at 19
         maxZoom: 22
       }).addTo(leafletMap.current);
